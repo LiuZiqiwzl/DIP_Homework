@@ -2,6 +2,9 @@ import gradio as gr
 from PIL import ImageDraw
 import numpy as np
 import torch
+import cv2
+import torch.nn.functional as F
+
 
 # Initialize the polygon state
 def initialize_polygon():
@@ -109,7 +112,7 @@ def create_mask_from_points(points, img_h, img_w):
     ### FILL: Obtain Mask from Polygon Points. 
     ### 0 indicates outside the Polygon.
     ### 255 indicates inside the Polygon.
-
+    cv2.fillPoly(mask, [points], 255)
     return mask
 
 # Calculate the Laplacian loss between the foreground and blended image
@@ -129,7 +132,22 @@ def cal_laplacian_loss(foreground_img, foreground_mask, blended_img, background_
     loss = torch.tensor(0.0, device=foreground_img.device)
     ### FILL: Compute Laplacian Loss with https://pytorch.org/docs/stable/generated/torch.nn.functional.conv2d.html.
     ### Note: The loss is computed within the masks.
+    # 确保掩码为布尔类型
+    foregroundmask = foreground_mask.bool()
+    backgroundmask = background_mask.bool()
 
+    # 创建拉普拉斯卷积核
+    laplacian_kernel = torch.tensor([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=torch.float32, device=foreground_img.device)
+    laplacian_kernel = laplacian_kernel.unsqueeze(0).unsqueeze(0).expand(1, 3, 3, 3)  
+    laplacian_kernel = laplacian_kernel.to(foreground_img.device)  
+    # 计算前景图像和混合图像的拉普拉斯变换
+    foreground_laplacian = F.conv2d(foreground_img, laplacian_kernel, padding=1)
+    blended_laplacian = F.conv2d(blended_img, laplacian_kernel, padding=1)
+    
+    foregroundmask
+    #逐元素比较避免计算位移
+    loss = torch.sum((foreground_laplacian[foregroundmask] - blended_laplacian[backgroundmask]) ** 2)
+   
     return loss
 
 # Perform Poisson image blending
@@ -169,6 +187,21 @@ def blending(foreground_image_original, background_image_original, dx, dy, polyg
     fg_mask_tensor = torch.from_numpy(foreground_mask).to(device).unsqueeze(0).unsqueeze(0).float() / 255.
     bg_mask_tensor = torch.from_numpy(background_mask).to(device).unsqueeze(0).unsqueeze(0).float() / 255.
 
+
+    #编辑fg_mask_tensor
+    # # 获取 fg_mask_tensor 的形状
+    # H, W = background_mask.shape
+    # # 使用 meshgrid 创建坐标矩阵。
+    # H_fg, W_fg = fg_mask_tensor.shape[-2:]  # 获取前景掩码的高度和宽度
+    # y_coords, x_coords = torch.meshgrid(torch.arange(H_fg, device=fg_mask_tensor.device), 
+    #                                     torch.arange(W_fg, device=fg_mask_tensor.device), 
+    #                                     indexing='ij')
+
+    # # 生成条件掩码：满足条件的将保留，不满足的设为0。
+    # condition_mask = (x_coords < W - dx) & (y_coords < H - dy)
+    # fg_mask_tensor *= condition_mask.unsqueeze(0).unsqueeze(0).float()
+    #边界剪裁
+
     # Initialize blended image
     blended_img = bg_img_tensor.clone()
     mask_expanded = bg_mask_tensor.bool().expand(-1, 3, -1, -1)
@@ -177,6 +210,7 @@ def blending(foreground_image_original, background_image_original, dx, dy, polyg
 
     # Set up optimizer
     optimizer = torch.optim.Adam([blended_img], lr=1e-3)
+
 
     # Optimization loop
     iter_num = 10000
