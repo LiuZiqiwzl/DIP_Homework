@@ -1,22 +1,15 @@
 import cv2
 import numpy as np
 import gradio as gr
-from scipy.interpolate import RBFInterpolator
 import numpy as np
 from joblib import Parallel, delayed
 import numpy as np
 from sklearn.metrics import pairwise_distances
 from MLS import *
-from scipy.spatial import Delaunay
-from skimage.transform import PiecewiseAffineTransform, warp
 import time
 
 from skimage.draw import polygon
-import matplotlib.pyplot as plt
-from scipy.spatial import Delaunay
-from skimage import transform
-from skimage.transform import AffineTransform, warp
-
+  
 
 
 # 初始化全局变量，存储控制点和目标点
@@ -180,16 +173,24 @@ def point_guided_deformation(image, source_pts, target_pts, alpha=1.0, eps=1e-8)
     #         if np.all(output[y, x] == 0):  # 如果像素为黑，则进行插值
     #             # 使用双线性插值
     #              output[y, x] = bilinear_interpolation(output, x, y)
-    output = remove_black_lines(output) #中值滤波去除黑线
+    #中值滤波去除黑线
+    output = remove_black_lines(output) 
+
     #output =  interpolate_black_lines(output)  # opencv去除黑线
-    mask = (output == 0).astype(np.uint8)[:, :, 0]  # 对黑色部分进行掩码提取
-    # 使用 inpaint 方法
+    
+    # 使用 inpaint 方法去除黑线
+    ##mask = (output == 0).astype(np.uint8)[:, :, 0]  # 对黑色部分进行掩码提取
     #output = cv2.inpaint(output, mask, inpaintRadius=2, flags=cv2.INPAINT_TELEA)
+
+    #三次插值去除黑线
+    output = cv2.resize(output, (output.shape[1], output.shape[0]), interpolation=cv2.INTER_CUBIC)
     end_time_c = time.time()
     elapsed_time_c = end_time_c - start_time_c
     print(f"去黑线: {elapsed_time_c} 秒")
 
     #网格绘制
+    #可视化网格：绘制开始
+    start_time_d = time.time()
     output_grid = remove_black_lines(output)
     # 显示变形前网格
     for x in all_x:
@@ -228,10 +229,14 @@ def point_guided_deformation(image, source_pts, target_pts, alpha=1.0, eps=1e-8)
     for pt in source_pts:
         xx,yy = mls_affine(source_pts, target_pts, pt)
         output_grid = cv2.circle(output_grid, tuple([int(xx),int(yy)]), 5, (0, 255, 255), -1)  # 用红色标记
+    output =     output_grid  # 显示网格
+    end_time_d = time.time()
+    elapsed_time_d = end_time_d - start_time_d 
+    print(f"网格绘制: {elapsed_time_d} 秒")
     # 可视化网格：绘制结束
 
-
-    return output_grid  # 去除黑线
+ 
+    return output  # 去除黑线
 
 
  
