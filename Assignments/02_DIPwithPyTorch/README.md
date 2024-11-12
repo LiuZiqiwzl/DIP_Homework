@@ -17,6 +17,7 @@ Fill the [Polygon to Mask function](run_blending_gradio.py#L95) and the [Laplaci
 
 ### 2. Pix2Pix implementation.
 See [Pix2Pix subfolder](Pix2Pix/).
+<img src="image.png" alt="alt text" width="800"/>
 
 ---
 ### Requirements:
