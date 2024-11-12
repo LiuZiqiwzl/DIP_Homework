@@ -1,0 +1,11 @@
+# 忽略 datasets 目录及其子目录中的所有 jpg 和 png 文件
+datasets/**/*.jpg
+datasets/**/*.png
+
+# 忽略 train_results 目录及其子目录中的所有 jpg 和 png 文件
+train_results/**/*.jpg
+train_results/**/*.png
+
+# 忽略 val_results 目录及其子目录中的所有 jpg 和 png 文件
+val_results/**/*.jpg
+val_results/**/*.png
