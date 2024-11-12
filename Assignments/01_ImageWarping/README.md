@@ -58,8 +58,7 @@ python run_point_transform.py
 
 ### Point Guided Deformation:
 <img src="pics/point_transform_v2.gif" alt="alt text" width="800">
-<img src="image-2.png" alt="Point Guided Deformation Example" width="800">
-<img src="image-1.png" alt="变形后效果" width="800">
+<img src="pics/image.png" alt="变形后效果" width="800">
 
 更多效果图在pics文件夹内
 
