@@ -12,7 +12,6 @@
 ### 1. Basic Image Geometric Transformation (Scale/Rotation/Translation).
 Fill the [Missing Part](run_global_transform.py#L21) of 'run_global_transform.py'.
 
-
 ### 2. Point Based Image Deformation.
 
 Implement MLS or RBF based image deformation in the [Missing Part](run_point_transform.py#L52) of 'run_point_transform.py'.
@@ -25,7 +24,7 @@ Implement MLS or RBF based image deformation in the [Missing Part](run_point_tra
 
 This repository is Yudong Guo's implementation of Assignment_01 of DIP. 
 
-<img src="pics/teaser.png" alt="alt text" width="800">
+<img src="image.png" alt="alt text" width="800">
 
 ## Requirements
 
@@ -34,7 +33,7 @@ To install requirements:
 ```setup
 python -m pip install -r requirements.txt
 ```
-
+conda 安装的gradio包（conda-forge）版本为 3.46.1，版本过高有bug;
 
 ## Running
 
@@ -56,6 +55,8 @@ python run_point_transform.py
 
 ### Point Guided Deformation:
 <img src="pics/point_demo.gif" alt="alt text" width="800">
+<img src="image-2.png" alt="Point Guided Deformation Example" width="800">
+<img src="image-1.png" alt="变形后效果" width="800">
 
 ## Acknowledgement
 
