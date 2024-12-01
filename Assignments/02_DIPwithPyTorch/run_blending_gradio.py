@@ -116,7 +116,7 @@ def create_mask_from_points(points, img_h, img_w):
     return mask
 
 # Calculate the Laplacian loss between the foreground and blended image
-def cal_laplacian_loss(foreground_img, foreground_mask, blended_img, background_mask):
+def cal_laplacian_loss(foreground_img, foreground_mask, blended_img, background_mask,bg_img_tensor):
     """
     Computes the Laplacian loss between the foreground and blended images within the masks.
 
@@ -146,9 +146,44 @@ def cal_laplacian_loss(foreground_img, foreground_mask, blended_img, background_
     
     foregroundmask
     #逐元素比较避免计算位移
-    loss = torch.sum((foreground_laplacian[foregroundmask] - blended_laplacian[backgroundmask]) ** 2)
+    laplacian_loss = torch.sum((foreground_laplacian[foregroundmask] - blended_laplacian[backgroundmask]) ** 2)
    
-    return loss
+    # 计算梯度算子（Sobel算子，用于边缘检测）
+    sobel_x = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]],
+                           dtype=torch.float32, device=foreground_img.device).unsqueeze(0).unsqueeze(0)
+    sobel_y = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]],
+                           dtype=torch.float32, device=foreground_img.device).unsqueeze(0).unsqueeze(0)
+    sobel_x = sobel_x.expand(foreground_img.shape[1], -1, -1, -1)  # (C, 1, 3, 3)
+    sobel_y = sobel_y.expand(foreground_img.shape[1], -1, -1, -1)  # (C, 1, 3, 3)
+
+
+    # 计算混合图像和背景图像的梯度
+    blended_grad_x = F.conv2d(blended_img, sobel_x, padding=1, groups=blended_img.shape[1])
+    blended_grad_y = F.conv2d(blended_img, sobel_y, padding=1, groups=blended_img.shape[1])
+    bg_grad_x = F.conv2d(bg_img_tensor, sobel_x, padding=1, groups=bg_img_tensor.shape[1])
+    bg_grad_y = F.conv2d(bg_img_tensor, sobel_y, padding=1, groups=bg_img_tensor.shape[1])
+
+    # 计算蒙版的边界
+    boundary_kernel = torch.tensor([[1, 1, 1], [1, -8, 1], [1, 1, 1]],
+                                    dtype=torch.float32, device=foreground_mask.device).unsqueeze(0).unsqueeze(0)
+    boundary_mask = F.conv2d(backgroundmask.float(), boundary_kernel, padding=1) > 0  # (B, 1, H, W)
+    boundary_mask = boundary_mask.bool()  # 检测到的边界像素点
+    boundary_mask = boundary_mask.expand(-1, 3, -1, -1)  # (B, 3, H, W)
+    # 计算梯度差值的绝对值
+    grad_diff_x = torch.abs(blended_grad_x - bg_grad_x)
+    grad_diff_y = torch.abs(blended_grad_y - bg_grad_y)
+
+    # 总梯度差
+    gradient_loss = torch.sum(grad_diff_x[boundary_mask]) + torch.sum(grad_diff_y[boundary_mask])
+
+
+    # 权重
+    alpha=1
+
+    # 总损失（拉普拉斯损失 + 梯度差损失）
+    total_loss = laplacian_loss + alpha*gradient_loss
+
+    return total_loss
 
 # Perform Poisson image blending
 def blending(foreground_image_original, background_image_original, dx, dy, polygon_state):
@@ -217,13 +252,13 @@ def blending(foreground_image_original, background_image_original, dx, dy, polyg
     for step in range(iter_num):
         blended_img_for_loss = blended_img.detach() * (1. - bg_mask_tensor) + blended_img * bg_mask_tensor  # Only blending in the mask region
 
-        loss = cal_laplacian_loss(fg_img_tensor, fg_mask_tensor, blended_img_for_loss, bg_mask_tensor)
+        loss = cal_laplacian_loss(fg_img_tensor, fg_mask_tensor, blended_img_for_loss, bg_mask_tensor,bg_img_tensor)
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        if step % 50 == 0:
+        if step % 100 == 0:
             print(f'Optimize step: {step}, Laplacian distance loss: {loss.item()}')
 
         if step == (iter_num // 2): ### decrease learning rate at the half step
