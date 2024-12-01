@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "cwd": "D:\\DIP\\DIP-Teaching\\Assignments\\02_DIPwithPyTorch\\Pix2Pix" // 添加此行
+            "cwd": "D:\\DIP\\DIP-Teaching\\Assignments\\03_PlayWithGANs\\DragGAN\\DragGAN" // 添加此行
         }
     ]
 }

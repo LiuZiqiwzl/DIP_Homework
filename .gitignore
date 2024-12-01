@@ -9,3 +9,10 @@ train_results/**/*.png
 # 忽略 val_results 目录及其子目录中的所有 jpg 和 png 文件
 val_results/**/*.jpg
 val_results/**/*.png
+# 忽略 val_results 目录及其子目录中的所有 jpg 和 png 文件
+*/*results/**/*.png
+*/*results/**/*.jpg
+*/*results/**/*.jpeg
+*/*results/**/*.gif
+*/*results/**/*.bmp
+*/*results/**/*.tiff

@@ -10,3 +10,5 @@
 
 \
 See [作业03-Play_with_GANs.pptx](https://rec.ustc.edu.cn/share/705bfa50-6e53-11ef-b955-bb76c0fede49) for detailed requirements.
+
+part1: 改进第二次作业 完成
