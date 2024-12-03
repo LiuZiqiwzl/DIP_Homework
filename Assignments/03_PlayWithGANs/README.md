@@ -58,8 +58,13 @@ cd DragGAN
 
 ### Part2
 
-![alt text](效果图/00005.png)       ![alt text](效果图/smile.png)
-![alt text](效果图/00006.png)       ![alt text](效果图/close_eyes.png)
+| ![alt text](效果图/00005.png) | ![alt text](效果图/smile.png) |
+| --- | --- |
+| ![alt text](效果图/00006.png) | ![alt text](效果图/close_eyes.png) |
+
+![alt text](closeeyes_1.gif)
+
+![alt text](draggan_1.gif)
 
 ## 代码出处
 
