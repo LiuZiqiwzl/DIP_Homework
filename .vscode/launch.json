@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "cwd": "D:\\DIP\\DIP-Teaching\\Assignments\\03_PlayWithGANs\\draggan" // 添加此行
+            "cwd": "D:\\DIP\\DIP-Teaching\\Assignments\\04_3DGS" // 添加此行
         }
     ]
 }

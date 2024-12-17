@@ -16,3 +16,5 @@ val_results/**/*.png
 */*results/**/*.gif
 */*results/**/*.bmp
 */*results/**/*.tiff
+/Assignments/04_3DGS/data/*/image/*
+/Assignments/04_3DGS/data/chair/images/r_0.png
