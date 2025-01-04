@@ -25,6 +25,12 @@ if __name__ == '__main__':
     os.makedirs(os.path.join(data_dir, 'sparse', '0_text'), exist_ok=True)
     subprocess.run(['colmap', 'model_converter', '--input_path', os.path.join(data_dir, 'sparse', '0'), '--output_path', os.path.join(data_dir, 'sparse', '0_text'), '--output_type', 'TXT'])
 
+    # Convert binary model to PLY format for Blender
+    os.makedirs(os.path.join(data_dir, '0_model'), exist_ok=True)
+    subprocess.run(['colmap', 'model_converter', '--input_path', os.path.join(data_dir, 'sparse', '0'), '--output_path', os.path.join(data_dir, '0_model', 'reconstruction.ply'), '--output_type', 'PLY'])
+
+
     print("COLMAP multi-view stereo pipeline completed successfully!")
     print("Sparse 3D reconstruction saved in:", os.path.join(data_dir, 'sparse', '0_text'))
     
+    print("PLY model for Blender saved in:", os.path.join(data_dir, '0_model', 'reconstruction.ply'))

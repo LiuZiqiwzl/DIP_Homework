@@ -5,7 +5,7 @@ from typing import Dict, Tuple
 from dataclasses import dataclass
 import numpy as np
 import cv2
-
+import math
 
 class GaussianRenderer(nn.Module):
     def __init__(self, image_height: int, image_width: int):
@@ -48,11 +48,16 @@ class GaussianRenderer(nn.Module):
         J_proj = torch.zeros((N, 2, 3), device=means3D.device)
         ### FILL:
         ### J_proj = ...
-        
+        J_proj[:, 0, 0] = K[0, 0] / cam_points[:, 2]
+        J_proj[:, 0, 2] = -K[0, 0] * cam_points[:, 0] / (cam_points[:, 2] ** 2)
+        J_proj[:, 1, 1] = K[1, 1] / cam_points[:, 2]
+        J_proj[:, 1, 2] = -K[1, 1] * cam_points[:, 1] / (cam_points[:, 2] ** 2)
+    
         # Transform covariance to camera space
         ### FILL: Aplly world to camera rotation to the 3d covariance matrix
         ### covs_cam = ...  # (N, 3, 3)
-        
+        covs_cam = torch.bmm(R.unsqueeze(0).expand(N, -1, -1), torch.bmm(covs3d, R.T.unsqueeze(0).expand(N, -1, -1)))  # (N, 3, 3)
+
         # Project to 2D
         covs2D = torch.bmm(J_proj, torch.bmm(covs_cam, J_proj.permute(0, 2, 1)))  # (N, 2, 2)
         
@@ -73,7 +78,12 @@ class GaussianRenderer(nn.Module):
         # Add small epsilon to diagonal for numerical stability
         eps = 1e-4
         covs2D = covs2D + eps * torch.eye(2, device=covs2D.device).unsqueeze(0)
-        
+        inv_covs2D = torch.inverse(covs2D)  # (N, 2, 2)
+        det_covs2D = torch.det(covs2D)  # (N,)
+
+        exponent = -0.5 * torch.einsum('nhwi,nij,nhwj->nhw', dx, inv_covs2D, dx)  # (N, H, W)
+        gaussian = 1.0 / (2 * math.pi)  * torch.rsqrt(det_covs2D).unsqueeze(1).unsqueeze(2) * torch.exp(exponent)  # (N, H, W)
+
         # Compute determinant for normalization
         ### FILL: compute the gaussian values
         ### gaussian = ... ## (N, H, W)
@@ -120,7 +130,10 @@ class GaussianRenderer(nn.Module):
         # 7. Compute weights
         ### FILL:
         ### weights = ... # (N, H, W)
-        
+        transmittance = torch.cumprod(1.0 - alphas + 1e-10, dim=0)  # (N, H, W)
+        transmittance = torch.cat([torch.ones_like(transmittance[:1]), transmittance[:-1]], dim=0)  # (N, H, W)
+        weights = alphas * transmittance  # (N, H, W)
+    
         # 8. Final rendering
         rendered = (weights.unsqueeze(-1) * colors).sum(dim=0)  # (H, W, 3)
         

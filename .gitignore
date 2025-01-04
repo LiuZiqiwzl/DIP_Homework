@@ -16,5 +16,13 @@ val_results/**/*.png
 */*results/**/*.gif
 */*results/**/*.bmp
 */*results/**/*.tiff
-/Assignments/04_3DGS/data/*/image/*
+*/04_3DGS/data/**/*.png
+*/04_3DGS/data/**/*.jpg
+*/04_3DGS/data/**/*.jpeg
+*/04_3DGS/data/**/*.gif
+*/04_3DGS/data/**/*
 /Assignments/04_3DGS/data/chair/images/r_0.png
+
+*/04_3DGS/pytorch3d077/**/*
+!pytorch3d077/
+*.pyc

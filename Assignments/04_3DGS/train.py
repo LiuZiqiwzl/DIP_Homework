@@ -20,7 +20,7 @@ class TrainConfig:
     batch_size: int = 1
     learning_rate: float = 0.01
     grad_clip: float = 1.0
-    save_every: int = 20
+    save_every: int = 4
     checkpoint_dir: str = "checkpoints"
     log_dir: str = "logs"
     debug_every: int = 1  # Save debug images every N epochs
@@ -259,7 +259,7 @@ def parse_args():
                       help='Path to checkpoint to resume from')
     
     # Training parameters
-    parser.add_argument('--num_epochs', type=int, default=200,
+    parser.add_argument('--num_epochs', type=int, default=12,
                       help='Number of training epochs')
     parser.add_argument('--batch_size', type=int, default=1,
                       help='Training batch size')

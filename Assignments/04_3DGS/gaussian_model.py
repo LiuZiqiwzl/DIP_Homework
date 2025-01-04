@@ -112,6 +112,8 @@ class GaussianModel(nn.Module):
         # Compute covariance
         ### FILL:
         ### Covs3d = ...
+        S2 = S ** 2
+        Covs3d = R @ S2 @ R.transpose(-1, -2)
         
         return Covs3d
 
