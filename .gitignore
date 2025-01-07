@@ -24,5 +24,7 @@ val_results/**/*.png
 /Assignments/04_3DGS/data/chair/images/r_0.png
 
 */04_3DGS/pytorch3d077/**/*
+*/04_3DGS/05/**/*
 !pytorch3d077/
 *.pyc
+**/logs/**/*

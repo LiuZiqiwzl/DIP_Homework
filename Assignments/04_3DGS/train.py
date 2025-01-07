@@ -20,7 +20,7 @@ class TrainConfig:
     batch_size: int = 1
     learning_rate: float = 0.01
     grad_clip: float = 1.0
-    save_every: int = 4
+    save_every: int = 2
     checkpoint_dir: str = "checkpoints"
     log_dir: str = "logs"
     debug_every: int = 1  # Save debug images every N epochs
